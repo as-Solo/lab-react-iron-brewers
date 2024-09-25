@@ -1,27 +1,60 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Search from "../components/Search";
-import beersJSON from "./../assets/beers.json";
+// import beersJSON from "./../assets/beers.json";
+import axios from "axios";
+import defaultBeerImage from '../assets/DefaultBeer.jpg'
 
 
 
-function AllBeersPage() {
-  // Mock initial state, to be replaced by data from the API. Once you retrieve the list of beers from the Beers API store it in this state variable.
-  const [beers, setBeers] = useState(beersJSON);
+
+function AllBeersPage(props) {
+
+  const url="https://ih-beers-api2.herokuapp.com/beers"
+  // GET	/	[beers]
+  // GET	/:id
+  // GET	/random	{ beer }
+  // POST	/new	{ message: "New beer successfully saved to database!"}
+  // GET	/search?q={query}	[beers]
+  
+
+  const {getData, beers, setBeers} = props
+  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [query, setQuery] = useState('')
 
 
+  const handleImageLoad = () => {
+    setIsImageLoading(false);
+  };
 
-  // TASKS:
-  // 1. Set up an effect hook to make a request to the Beers API and get a list with all the beers.
-  // 2. Use axios to make a HTTP request.
-  // 3. Use the response data from the Beers API to update the state variable.
+  const handleImageError = (beer) => {
+    beer.image_url = defaultBeerImage;
+    setIsImageLoading(false);
+  };
+
+  const getQuery = async()=>{
+    const response = await axios.get(`https://ih-beers-api2.herokuapp.com/beers/search?q=${query}`)
+    setBeers(response.data)
+  }
+
+  useEffect(()=>{
+    getData()
+    return ()=>{}
+  }, [])
+
+  useEffect(()=>{
+    getQuery()
+    return ()=>{}
+  }, [query])
 
 
+  if (beers === null){
+    return (<h3>...loading</h3>)
+  }
 
-  // The logic and the structure for the page showing the list of beers. You can leave this as it is for now.
   return (
     <>
-      <Search />
+      <Search query={query} setQuery={setQuery}/>
 
       <div className="d-inline-flex flex-wrap justify-content-center align-items-center w-100 p-4">
         {beers &&
@@ -35,6 +68,8 @@ function AllBeersPage() {
                         src={beer.image_url}
                         style={{ height: "6rem" }}
                         alt={"image of" + beer.name}
+                        onLoad={handleImageLoad}
+                        onError={(beer)=>(handleImageError)(beer)}
                       />
                       <h5 className="card-title text-truncate mt-2">{beer.name}</h5>
                       <h6 className="card-subtitle mb-3 text-muted">
@@ -50,6 +85,8 @@ function AllBeersPage() {
             );
           })}
       </div>
+
+
     </>
   );
 }

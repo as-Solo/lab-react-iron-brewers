@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-function AddBeerPage() {
+function AddBeerPage(props) {
   // State variables to store the values of the form inputs. You can leave these as they are.
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
@@ -21,13 +23,26 @@ function AddBeerPage() {
   const handleAttenuationLevel = (e) => setAttenuationLevel(e.target.value);
   const handleContributedBy = (e) => setContributedBy(e.target.value);
 
-
+  const urlNewBeer ="https://ih-beers-api2.herokuapp.com/beers/new"
+  const redirect = useNavigate()
+  const {getData} = props
 
   // TASK:
   // 1. Create a function to handle the form submission and send the form data to the Beers API to create a new beer.
   // 2. Use axios to make a POST request to the Beers API.
   // 3. Once the beer is created, navigate the user to the page showing the list of all beers.
-
+  const  addBeer = async (e)=>{
+    e.preventDefault()
+    const _id = Math.ceil(Math.random()*79865).toString(16, '0')
+    console.log(_id)
+    await axios.post(urlNewBeer, {_id, name, tagline, description, imageUrl, firstBrewed, brewersTips, attenuationLevel, contributedBy})
+    getData()
+    redirect('/beers')
+  }
+  // useEffect(()=>{
+  //   AddBeerPage()
+  //   return ()=>{}
+  // }, [])
 
 
   // Structure and the content of the page showing the form for adding a new beer. You can leave this as it is.
@@ -122,7 +137,7 @@ function AddBeerPage() {
             value={contributedBy}
             onChange={handleContributedBy}
           />
-          <button className="btn btn-primary btn-round">Add Beer</button>
+          <button onClick={(e)=>addBeer(e)} className="btn btn-primary btn-round">Add Beer</button>
         </form>
       </div>
     </>

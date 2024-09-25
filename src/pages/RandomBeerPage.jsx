@@ -1,16 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import beersJSON from "./../assets/beers.json";
+import axios from "axios";
+import defaultBeerImage from '../assets/DefaultBeer.jpg'
+
 
 
 function RandomBeersPage() {
+  
   // Mock initial state, to be replaced by data from the Beers API. Store the beer info retrieved from the Beers API in this state variable.
   const [randomBeer, setRandomBeer] = useState(beersJSON[0]);
-
+  const url = "https://ih-beers-api2.herokuapp.com/beers/random"
   // React Router hook for navigation. We use it for the back button. You can leave this as it is.
   const navigate = useNavigate();
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
 
+  const getRandom = async ()=>{
+    const response = await axios.get(url)
+    setRandomBeer(response.data)
+  }
+
+  const handleImageLoad = () => {
+    setIsImageLoading(false);
+  };
+
+  const handleImageError = () => {
+    let clone = structuredClone(randomBeer);
+    clone.image_url = defaultBeerImage;
+    setRandomBeer(clone)
+    setIsImageLoading(false);
+  };
+  useEffect(()=>{
+    getRandom()
+    return()=>{}
+  }, [])
   
   // TASKS:
   // 1. Set up an effect hook to make a request for a random beer from the Beers API.
@@ -31,6 +55,8 @@ function RandomBeersPage() {
             alt="beer"
             height="300px"
             width="auto"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
           />
           <h3>{randomBeer.name}</h3>
           <p>{randomBeer.tagline}</p>
